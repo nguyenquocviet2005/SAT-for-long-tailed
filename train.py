@@ -186,7 +186,7 @@ def main():
     if args.evaluate:
         print('\nEvaluation only')
         assert os.path.isfile(resume_path), 'no model exists at "{}"'.format(resume_path)
-        model = torch.load(resume_path)
+        model = torch.load(resume_path, weights_only=False)
         if use_cuda: model = model.cuda()
         test(testloader, model, criterion, args.epochs, use_cuda, evaluation=True)
         return
@@ -372,10 +372,13 @@ def test(testloader, model, criterion, epoch, use_cuda, evaluation = False):
         abstention_results.sort(key = lambda x: x[0], reverse=True)
         # get the "correct or not" list for the sorted results
         sorted_correct = list(map(lambda x: int(x[1]), abstention_results))
-        size = len(testloader)
+        size = len(abstention_results)
         print('accracy of coverage ',end='')
         for coverage in expected_coverage:
-            print('{:.0f}: {:.3f}, '.format(coverage, sum(sorted_correct[int(size/100*coverage):])),end='')
+            num_samples = size - int(size * (100 - coverage) / 100)
+            if num_samples > 0:
+                acc = sum(sorted_correct[:num_samples]) / num_samples * 100
+                print('{:.0f}: {:.2f}, '.format(coverage, acc),end='')
         print('')
     return (losses.avg, top1.avg)
 

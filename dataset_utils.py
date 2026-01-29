@@ -15,7 +15,7 @@ class resized_dataset(Dataset):
             end = dataset.__len__()
         if resize is None:
             for i in range(start, end):
-                self.data.append((*dataset.__getitem__(i)))
+                self.data.append(dataset.__getitem__(i))
         else:
             for i in range(start, end):
                 item = dataset.__getitem__(i)
@@ -38,10 +38,8 @@ class C10(datasets.CIFAR10):
                                      target_transform=target_transform, download=download)
 
     def __getitem__(self, index):
-        if self.train:
-            img, target = self.train_data[index], self.train_labels[index]
-        else:
-            img, target = self.test_data[index], self.test_labels[index]
+        # Updated for newer torchvision (self.data and self.targets instead of train_data/test_data)
+        img, target = self.data[index], self.targets[index]
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
